@@ -1,0 +1,37 @@
+
+type Foo = struct {
+     a: i32,
+     b: &str,
+};
+
+type Bar = union {
+     foo: Foo,
+     baz: int,
+};
+
+impl Foo {
+     init(a: i32, b: &str) {
+     	  self.a = a;
+	  self.b = b;
+     }
+     
+     func name(&self) &str {
+     	  self.b
+     }
+
+     func age(&self) i32 { self.a }
+}
+
+func main () void {
+     use io; # for println
+     bar :Bar = .{ .baz = 3 };
+     match bar {
+     	   baz |x| -> {
+	       println ("x = %d", x);
+	   }
+
+	   foo |f| -> {
+	       println ("f = %v", f);
+	   }
+     }
+}

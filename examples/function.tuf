@@ -1,0 +1,29 @@
+
+func add (a:i32, b:i32) i32 {
+     a + b
+}
+
+func div (a:i32, b:i32) ?i32 {
+     if b == 0 then nil else then a / b
+}
+
+func factorial (n:i32) i32 {
+     a := n;
+     b := n - 1;
+     while b >= 2 {
+	   a *= b;
+     	   b -= 1;
+     }
+     a
+}
+
+extern func printf (fmt: *char, ...) i32;
+extern func scanf (fmt: *char, ...) i32;
+
+func main () i32 {
+     use ffi; # for to_cstr(&str)
+     printf ("Hello World".to_cstr());
+     n : i32 = 0;
+     scanf ("%d".to_cstr(),&n);
+     printf ("N = %d".to_cstr(),n);
+}
