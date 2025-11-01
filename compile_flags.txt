@@ -1,0 +1,4 @@
+-Icompiler
+-Iinclude
+-Wall
+-Wno-c99-designator

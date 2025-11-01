@@ -1,12 +1,9 @@
 #pragma once
 
-#include <string>
-#include <optional>
-
 namespace tuff::args {
     struct Args {
-	std::string input_file;
-	std::optional<std::string> output_file;
+	const char *input_file;
+	const char *output_file;
 	int argc;
 	char **argv;
 	
@@ -15,6 +12,6 @@ namespace tuff::args {
 
     private:
 	bool default_selected = true;
-	std::string next_arg();
+	const char *next_arg();
     };
 } // args

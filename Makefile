@@ -9,13 +9,13 @@ COMPILER_OBJECTS := $(patsubst %.cc,$(BIN_DIR)/%.o,$(COMPILER_SOURCES))
 COMPILER_TARGET := $(BIN_DIR)/tuffc
 
 CXX=clang++
-CXX_FLAGS=-std=c++23 -Icompiler
+CXX_FLAGS=-std=c++23 -Icompiler -Iinclude -Wno-c99-designator
 
 $(COMPILER_TARGET): $(COMPILER_OBJECTS)
 	$(CXX)  $(COMPILER_OBJECTS) -o $(COMPILER_TARGET)
 
 $(BIN_DIR)/%.o: %.cc
-	if not exist $(subst /,\, $(dir $@)) mkdir $(subst /,\, $(dir $@))
+	@if not exist $(subst /,\, $(dir $@)) mkdir $(subst /,\, $(dir $@))
 	$(CXX) $(CXX_FLAGS) -c $< -o $@
 
 .PHONY: all clean

@@ -1,4 +1,6 @@
 
-func main() void {
-     age := 30;
+func f() i32 {
+}
+
+func main () i32 {
 }
