@@ -30,13 +30,11 @@ namespace tuff::parse {
     };
 
     typedef ast::NodePtr(*ParseInfix)(parse::Parser *, ast::NodePtr);
-    typedef ast::NodePtr(*ParsePostfix)(parse::Parser *, ast::NodePtr);
     typedef ast::NodePtr(*ParsePrefix)(parse::Parser *);
 
     struct ParseRule {
 	ParsePrefix prefix = nullptr;
 	ParseInfix infix = nullptr;
-	ParsePostfix postfix = nullptr;
 	Precedence   precedence = Precedence::None;
     };
 
@@ -44,20 +42,22 @@ namespace tuff::parse {
     ast::NodePtr parse_primary (Parser *p);
     ast::NodePtr parse_unary (Parser *p);
     ast::NodePtr parse_binary  (Parser *p, ast::NodePtr left);
-
-#define RULE(pr, in, po, prec) ParseRule {pr, in, po, prec}
+    ast::NodePtr parse_assign (Parser *p, ast::NodePtr left);
+    
+#define RULE(pr, in, prec) ParseRule {pr, in, prec}
 
     ParseRule parse_rules[] = {
-	[lex::IDENTIFIER]       = RULE (parse_primary, nullptr, nullptr, Precedence::Primary),
-	[lex::INT_LITERAL]      = RULE (parse_primary, nullptr, nullptr, Precedence::Primary),
-	[lex::STRING_LITERAL]   = RULE (parse_primary, nullptr, nullptr, Precedence::Primary),
-	[lex::AMP]              = RULE (parse_unary, parse_binary, nullptr, Precedence::BitAnd),
-	[lex::OR]               = RULE (parse_unary, parse_binary, nullptr, Precedence::BitOr),
-	[lex::PLUS]             = RULE (nullptr, parse_binary, nullptr, Precedence::Additive),
-	[lex::MINUS]            = RULE (nullptr, parse_binary, nullptr, Precedence::Additive),
-	[lex::ASTERISK]         = RULE (nullptr, parse_binary, nullptr, Precedence::Multiplicative),
-	[lex::DIV]              = RULE (nullptr, parse_binary, nullptr, Precedence::Multiplicative),
-	[lex::LBRACE]           = RULE (parse_block, nullptr, nullptr, Precedence::Primary),
+	[lex::ASSIGN]           = RULE (nullptr, parse_assign, Precedence::Assign),
+	[lex::IDENTIFIER]       = RULE (parse_primary, nullptr, Precedence::Primary),
+	[lex::INT_LITERAL]      = RULE (parse_primary, nullptr, Precedence::Primary),
+	[lex::STRING_LITERAL]   = RULE (parse_primary, nullptr, Precedence::Primary),
+	[lex::AMP]              = RULE (parse_unary, parse_binary, Precedence::BitAnd),
+	[lex::OR]               = RULE (parse_unary, parse_binary, Precedence::BitOr),
+	[lex::PLUS]             = RULE (nullptr, parse_binary, Precedence::Additive),
+	[lex::MINUS]            = RULE (nullptr, parse_binary, Precedence::Additive),
+	[lex::ASTERISK]         = RULE (nullptr, parse_binary, Precedence::Multiplicative),
+	[lex::DIV]              = RULE (nullptr, parse_binary, Precedence::Multiplicative),
+	[lex::LBRACE]           = RULE (parse_block, nullptr, Precedence::Primary),
     };
 
     const ParseRule
@@ -75,13 +75,11 @@ namespace tuff::parse {
 
 	for (;;) {
 	    auto op = p->peek_token ()->type;
-	    auto rule = get_rule (tok);
+	    auto rule = get_rule (op);
 	    if (op == lex::END_OF_FILE) break;
-        
 	    if ((int)rule.precedence < min_prec) break;
 
-	    if (rule.infix) left = rule.infix (p, std::move (left));
-	    else if (rule.postfix) left = rule.postfix (p, std::move (left));
+	    if (rule.infix) left = rule.infix (p, left);
 	    else break;
 	}
 	return left;
@@ -89,7 +87,13 @@ namespace tuff::parse {
 
     ast::NodePtr
     parse_primary (Parser *p) {
-	todo ();
+	auto tok = p->next_token ();
+	switch (tok->type) {
+	case lex::IDENTIFIER:
+	    return p->allocator->make<ast::Identifier>(tok->loc, tok->str);
+	    break;
+	default: todo ();
+	}
     }
 
     ast::NodePtr 
@@ -102,15 +106,19 @@ namespace tuff::parse {
     ast::NodePtr
     parse_block (Parser *p) {
 	ast::Block block_node;
-	expect_token (p, lex::LBRACE);
-	while (!at_end_or_is (p, lex::RBRACE)) {
+	p->next_token ();
+	while (!match_token (p, lex::RBRACE)) {
 	    ast::NodePtr node = parse_expression (p);
 	    if (node) {
-		block_node.add_node (std::move(node));
+		block_node.add_node (node);
 	    }
 	}
 	expect_token (p, lex::RBRACE);
-	return std::make_unique<ast::Block>(block_node);
+	return p->allocator->make<ast::Block>(block_node);
     }
 
+    ast::NodePtr
+    parse_assign (Parser *p, ast::NodePtr left) {
+	todo ();
+    }
 } // tuff::parser

@@ -9,7 +9,7 @@ COMPILER_OBJECTS := $(patsubst %.cc,$(BIN_DIR)/%.o,$(COMPILER_SOURCES))
 COMPILER_TARGET := $(BIN_DIR)/tuffc
 
 CXX=clang++
-CXX_FLAGS=-std=c++23 -Icompiler -Iinclude -Wno-c99-designator
+CXX_FLAGS=-std=c++23 -Icompiler -Iinclude -Wno-c99-designator -ggdb
 
 $(COMPILER_TARGET): $(COMPILER_OBJECTS)
 	$(CXX)  $(COMPILER_OBJECTS) -o $(COMPILER_TARGET)

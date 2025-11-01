@@ -24,10 +24,14 @@ namespace tuff::error {
 
 	    Label (lex::Location loc, const char *msg, Level lvl)
 		: level (lvl), loc (loc), message (msg) {}
-	} label;
-	
-	Array<Diag::Label> labels;
 
+	    Label () {}
+	} label;
+	Array<Diag::Label> labels;
+	
+
+	Diag ()
+	    : label (), labels () {}
 	Diag (lex::Location loc, const char *msg, Diag::Level lvl = Level::Error)
 	    : label (loc, msg, lvl) {}
 

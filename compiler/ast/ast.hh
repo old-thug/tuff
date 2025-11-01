@@ -9,7 +9,7 @@
 
 namespace tuff::ast {
     struct Node;
-    using NodePtr = std::unique_ptr<Node>;
+    using NodePtr = Node *;
 
     enum struct NodeKind {
 	ItemBegin,
@@ -26,6 +26,7 @@ namespace tuff::ast {
 	Boolean,
 	String,
 	Character,
+	Declare,
 	
 	ExprEnd,
     };
@@ -53,6 +54,7 @@ namespace tuff::ast {
 	Identifier (lex::Location loc, StringView val)
 	    : value (val), location (loc) {}
 
+	Identifier () = default;
     };
 
     struct Block : Node {
@@ -75,14 +77,36 @@ namespace tuff::ast {
 
 	void
 	add_node (NodePtr node) {
-	    this->items.push(std::move(node));
+	    this->items.push(node);
+	}
+    };
+
+    struct Declare: Node {
+	lex::Location _loc;
+	NodePtr       reciever;
+	TypePtr       type;
+	NodePtr       expr;
+
+	NodeKind
+	kind () const override {
+	    return NodeKind::Declare;
+	}
+
+	lex::Location
+	loc () const override {
+	    return this->_loc;
 	}
     };
     
     struct Function : Node {
 	struct Parameter {
 	    Identifier param_name;
-	    TypePtr    type;  
+	    TypePtr    type;
+
+	    Parameter (Identifier name, TypePtr type)
+		: param_name(name), type (type) {}
+
+	    Parameter () = default;
 	};
 	using ParameterList = Array<Function::Parameter>;
 	
@@ -109,7 +133,7 @@ namespace tuff::ast {
 		  Function::ParameterList params,
 		  TypePtr return_type, NodePtr body)
 	    : begin (loc), function_name (fname),
-	      parameters (std::move (params)), return_type (std::move (return_type)),
-	      body (std::move (body)) {}
+	      parameters (params), return_type (return_type),
+	      body (body) {}
     };
 } // tuff::ast

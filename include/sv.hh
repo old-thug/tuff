@@ -28,6 +28,11 @@ public:
 	return this->_data;
     }
 
+    bool
+    starts_with (const char *s) {
+	return !strncmp(this->_data, s, strlen (s));
+    }
+    
     size_t len () { return this->_len; }
 
     bool operator==(const char *s)

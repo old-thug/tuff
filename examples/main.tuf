@@ -3,4 +3,5 @@ func f() i32 {
 }
 
 func main () i32 {
+     a := f; 
 }

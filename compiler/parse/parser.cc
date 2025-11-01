@@ -5,7 +5,6 @@
 #include "compiler.hh"
 #include "def.hh"
 #include "lex/token.hh"
-#include <memory>
 
 namespace tuff::parse {
     // Foward Declarations.
@@ -24,8 +23,15 @@ namespace tuff::parse {
 	this->module_id = id;
 	this->sess	= sess;
 	this->current_token = this->lexer.next_token ();
+	this->allocator = sess->allocator();
+	this->mod = sess->get_module (id);
     }
 
+    void
+    Parser::add_item (ast::NodePtr item) {
+	this->mod->items.push (item);
+    }
+    
     lex::TokenPtr
     Parser::peek_token () {
 	return this->current_token;
@@ -102,6 +108,7 @@ namespace tuff::parse {
 	    switch (p->peek_token ()->type) {
 	    case lex::FUNC: {
 		auto func = parse_function (p);
+		p->add_item (func);
 	    } break;
 	    default: todo ("%s", lex::token_str (p->peek_token ()->type));
 	    }
@@ -109,20 +116,22 @@ namespace tuff::parse {
 	return items;
     }
 
-    /// param_list: '(' param... ')'
+    /// param_list: '(' param[,]* ')'
     /// param: <identifier> ':' <type>
     Array<ast::Function::Parameter>
     parse_function_param_list (Parser *p) {
 	Array<ast::Function::Parameter> params;
 	if (match_token (p, lex::LPAREN)) {
 	    p->next_token ();
+	    TODO (old-thug,
+		  "something causes a segfault here when parameters are present");
 	    while (!at_end_or_is (p, lex::RPAREN)) {
 		auto param_ident = parse_ident (p);
-		if (expect_token (p, lex::COLON)) {
-		    auto param_type  = parse_type (p);
-		    params.push ({param_ident, std::move (param_type)});
-		} else {
-		    
+		expect_token (p, lex::COLON);
+		auto param_type  = parse_type (p);
+		if (param_type) {
+		    auto param = ast::Function::Parameter(param_ident, param_type);
+		    params.push (param);
 		}
 		if (match_token (p, lex::COMMA)) {
 		    p->next_token ();
@@ -136,12 +145,12 @@ namespace tuff::parse {
 			"try adding \"()\" here");;
 	    skip_to_next (p, lex::RPAREN);
 	}
-	
+
 	expect_token (p, lex::RPAREN);
 	return params;
     }
 
-    /// function: [modifier] 'func' <identifier> param_list <type> <expr>
+    /// function: modifier* 'func' <identifier> param_list <type> <expr>
     ast::NodePtr
     parse_function (Parser *p) {
 	TODO (old-thug,
@@ -155,10 +164,10 @@ namespace tuff::parse {
 	    skip_to_next_start_of_expression (p);
 	}
 	auto fn_body = parse_expression (p, 0);
-	return std::make_unique<ast::Function> (fn_loc, fn_ident,
-					       std::move (parameters),
-					       std::move (fn_type),
-					       std::move (fn_body));
+	return p->sess->allocator()->make<ast::Function> (fn_loc, fn_ident,
+					       parameters,
+					       fn_type,
+					       fn_body);
     }
 
     /// identifier: [a-zA-Z_][a-zA-Z0-9_]*
@@ -215,7 +224,7 @@ namespace tuff::parse {
 	}
     }
     
-    /// type: <ident> | ['i' | 'u'](8 | 16 | 32 | 64) | 'void'
+    /// type: <ident> | ['i' | 'u'][8 | 16 | 32 | 64] | 'void'
     ast::TypePtr
     parse_type (Parser *p) {
 	lex::TokenPtr tok = p->peek_token ();
@@ -225,7 +234,7 @@ namespace tuff::parse {
 	}
 	p->next_token ();
 	switch (tok->type) {
-	case lex::IDENTIFIER:
+	case lex::IDENTIFIER: todo(); break;
 	case lex::I8:
 	case lex::I16:
 	case lex::I32:
@@ -237,11 +246,12 @@ namespace tuff::parse {
 	    {
 		auto sign = int_sign_from_token (tok->type);
 		auto size = int_size_from_token (tok->type);
-		return make_type(tok->loc, sign, size);
+		return make_type(p->allocator, tok->loc, sign, size);
 	    } break;
 	case lex::VOID:
-	    return make_type(ast::TypeKind::Void, tok->loc);
+	    return make_type(p->allocator, ast::TypeKind::Void, tok->loc);
 	default: todo ();
 	}
+	return nullptr;
     }
 } // tuff::parse

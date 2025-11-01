@@ -2,6 +2,7 @@
 
 #include "error/error.hh"
 #include "lex/loc.hh"
+#include "lex/token.hh"
 #include "parse/parser.hh"
 #include "def.hh"
 #include "unit/module.hh"
@@ -51,9 +52,20 @@ namespace tuff {
 	auto new_mod = unit::Module (path);
 	auto id = this->loaded_modules.len ();
 	this->loaded_modules.push (new_mod);
+	auto mod = get_module (id);
 	auto parser = parse::Parser (id, this);
-	parser.parse();
 
+#if 0
+	auto tok = parser.lexer.next_token ();
+	while (tok->type != lex::END_OF_FILE) {
+	    printn ("(Token %s) ", lex::token_str (tok->type));
+	    tok = parser.lexer.next_token ();
+	}
+	printn ("\n");
+#endif
+	
+	parser.parse();
+	printn ("Item Count: %zu\n", mod->items.len ());
 	report_diags (this);
 	return id;
     }
@@ -68,5 +80,10 @@ namespace tuff {
     error::DiagCollector*
     CompileSession::dcollector () {
 	return &this->diag_collector;
+    }
+    
+    Allocator *
+    CompileSession::allocator () {
+	return &this->_allocator;
     }
 }

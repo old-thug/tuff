@@ -42,13 +42,14 @@ namespace tuff::lex {
     TUFF_TOKEN (MINUS_EQ, "-=")						\
     TUFF_TOKEN (ASTERISK_EQ, "*=")					\
     TUFF_TOKEN (COMMA, ",")						\
-    TUFF_TOKEN (RETURN_TYPE, "->")					\
+    TUFF_TOKEN (LIGHT_ARROW, "->")					\
     TUFF_TOKEN (DOT, ".")						\
     TUFF_TOKEN (DOT_DOT, "..")						\
     TUFF_TOKEN (DOT_DOT_EQ, "..=")					\
     TUFF_TOKEN (ELLIPSIS, "...")					\
     TUFF_TOKEN (DIV_EQ, "/=")						\
     TUFF_TOKEN (COLON, ":")						\
+    TUFF_TOKEN (ASSIGN, ":=")						\
     TUFF_TOKEN (SEMICOLON, ";")						\
     TUFF_TOKEN (LEFT_SHIFT, "<<")					\
     TUFF_TOKEN (LEFT_SHIFT_EQ, "<<=")					\

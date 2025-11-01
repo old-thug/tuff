@@ -5,6 +5,7 @@
 
 namespace tuff::unit {
     Module::Module(const char *path)
+	: symbols()
     {
 	this->file_path = path;
 	// File existence should be ensured before calling this ctor.
@@ -18,7 +19,7 @@ namespace tuff::unit {
 	    fread (buf, 1, size, file);
 	    buf[size] = 0;
 	    this->file_content = buf;
-	}
+	} 
 	fclose (file);
     }
 

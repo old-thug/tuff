@@ -52,7 +52,7 @@ namespace tuff::ast {
 	    : kind (kind), loc (loc) {}
     };
     
-    using TypePtr = std::unique_ptr<Type>;
+    using TypePtr = Type *;
 
-#define make_type(...) std::make_unique<tuff::ast::Type>(__VA_ARGS__)
+#define make_type(allocator, ...) allocator->make<tuff::ast::Type>(__VA_ARGS__)
 } // tuff::ast
