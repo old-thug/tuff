@@ -17,7 +17,7 @@ typedef struct {
 } Location;
 
 inlined Location
-new_locus(size_t first_line, size_t last_line, size_t first_col, size_t last_col, ModuleId id) {
+make_locus(size_t first_line, size_t last_line, size_t first_col, size_t last_col, ModuleId id) {
     return (Location) { first_line, last_line, first_col, last_col, id };
 }
 

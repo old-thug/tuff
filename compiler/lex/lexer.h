@@ -7,6 +7,7 @@
 
 typedef struct {
     const char *source;
+    const char *cursor;
     ModuleId    module_id;
 
     struct {
@@ -21,6 +22,7 @@ open_lexer (CompileSession *sess, ModuleId id) {
     Lexer l = {0};
     l.module_id = id;
     l.source    = get_module (sess, id)->source;
+    l.cursor    = l.source;
     l.line = l.prev_line = l.col = l.prev_col = 1;
     l.max = strlen (l.source);
     return l;

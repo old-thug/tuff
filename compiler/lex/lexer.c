@@ -1,5 +1,17 @@
 #include "lex/lexer.h"
 #include "lex/token.h"
+#include "sv.h"
+#include <stdbool.h>
+#include <stdint.h>
+
+#define save_loc(l) \
+    l->prev_line = l->line;\
+    l->prev_col  = l->col
+
+#define get_loc(l) \
+    make_locus (l->prev_line, l->line,\
+		l->prev_col, l->col-1,\
+		l->module_id)
 
 static struct {
     const char *word;
@@ -18,6 +30,7 @@ static struct {
     { "u32", U32 },
     { "u64", U64 },
 };
+static int KEYWORD_LEN = sizeof (KEYWORDS)/sizeof (KEYWORDS[0]);
 
 NOTE (old-thug, "the order of this listing matters");
 static
@@ -74,8 +87,165 @@ struct { const char *word; int id; } PUNCTS[] = {
     { "|=", PIPE_EQ },
     { "|", PIPE },
 };
+static int PUNCTS_LEN = sizeof (PUNCTS)/sizeof (PUNCTS[0]);
+typedef uint32_t Codepoint;
+
+int
+utf8_decode (const char *s, Codepoint *cp) {
+    unsigned char c = (unsigned char)s[0];
+    if (c <= 0x7F) {
+        *cp = c;
+        return 1;
+    } else if ((c & 0xE0) == 0xC0) {
+        *cp = ((c & 0x1F) << 6) | (s[1] & 0x3F);
+        return 2;
+    } else if ((c & 0xF0) == 0xE0) {
+        *cp = ((c & 0x0F) << 12) | ((s[1] & 0x3F) << 6) | (s[2] & 0x3F);
+        return 3;
+    } else if ((c & 0xF8) == 0xF0) {
+        *cp = ((c & 0x07) << 18) | ((s[1] & 0x3F) << 12) |
+	    ((s[2] & 0x3F) << 6) | (s[3] & 0x3F);
+        return 4;
+    }
+    return -1; // invalid UTF-8
+}
+
+bool
+is_alpha (Codepoint cp) {
+    return (cp == '_') || (cp >= 'a' && cp <= 'z')
+	|| (cp >= 'A' && cp <= 'Z') || (cp > 127); 
+}
+
+bool
+is_digit (Codepoint cp) {
+    return (cp >= '0' && cp <= '9');
+}
+
+static Codepoint
+lexer_next_codepoint (Lexer *l) {
+    if (*(l->cursor) == 0) return 0;
+    Codepoint cp;
+    int len = utf8_decode (l->cursor, &cp);
+    if (len < 0) {
+	l->cursor ++;
+	return 0xFFFD;
+    }
+
+    l->cursor += len;
+    l->col ++;
+    return cp;
+}
+
+static Codepoint
+lexer_peek_codepoint(Lexer *l) {
+    if (*(l->cursor) == '\0') return 0; // EOF
+    Codepoint cp;
+    int len = utf8_decode(l->cursor, &cp);
+    if (len < 0) return 0xFFFD;
+    return cp;
+}
+
+static StringView
+lexer_slice (Lexer *l, const char *start) {
+    return sv_init (start, l->cursor - start);
+}
 
 Token
-lexer_get_token (Lexer *lexer) {
+lexer_get_token (Lexer *l) {
+    // Skip whitespace.
+    while (1) {
+	Codepoint cp = lexer_peek_codepoint (l);
+	if (cp == 0) break;
+	if (cp == ' ' || cp == '\t') {
+	    lexer_next_codepoint (l);
+	    continue;
+	}
 
+	if (cp == '\n') {
+	    lexer_next_codepoint (l);
+	    l->line ++;
+	    l->col  = 1;
+	    continue;
+	}
+
+	break;
+    }
+
+    save_loc (l);
+    const char *start = l->cursor;
+    Codepoint cp = lexer_peek_codepoint (l);
+
+    if (cp == 0) {
+	return make_token_x (END_OF_FILE, get_loc (l));
+    }
+
+    if (is_alpha (cp)) {
+	while (1) {
+	    Codepoint next;
+	    int len = utf8_decode(l->cursor, &next);
+	    if (len < 0) break;
+	    if (!is_alpha(next) && !is_digit(next)) break;
+	    l->cursor += len;
+	}
+	StringView word = lexer_slice (l, start);
+
+	for (int n = 0; n < KEYWORD_LEN; n ++) {
+	    StringView query = sv_init (KEYWORDS[n].word, strlen (KEYWORDS[n].word));
+	    if (sv_eq (word, query)) {
+		return make_token_x (KEYWORDS[n].id, get_loc (l));
+	    }
+	}
+	return make_token (IDENTIFIER, get_loc (l), word);
+    }
+
+    if (is_digit(cp)) {
+	const char *start = l->cursor;
+	Codepoint next = cp;
+	int base = 10;
+	
+	// check for 0x, 0b, 0o prefixes
+	if (next == '0') {
+	    const char *peek = l->cursor + 1;
+	    if (*peek == 'x' || *peek == 'X') { base = 16; l->cursor += 2; }
+	    else if (*peek == 'b' || *peek == 'B') { base = 2; l->cursor += 2; }
+	    else if (*peek == 'o' || *peek == 'O') { base = 8; l->cursor += 2; }
+	}
+	
+	// main digit loop
+	while (1) {
+	    int len = utf8_decode(l->cursor, &next);
+	    if (len < 0) break;
+	    bool valid = false;
+	    
+	    switch (base) {
+            case 2:  valid = (next == '0' || next == '1'); break;
+            case 8:  valid = (next >= '0' && next <= '7'); break;
+            case 10: valid = is_digit(next); break;
+            case 16: valid = is_digit(next) ||
+		    (next >= 'a' && next <= 'f') ||
+		    (next >= 'A' && next <= 'F'); break;
+	    }
+
+	    // Allow for 1_000_000 style digits;
+	    if (next == '_') { l->cursor += len; continue; }
+	    
+	    if (!valid) break;
+	    l->cursor += len;
+	}
+
+	StringView digits = lexer_slice(l, start);
+	return make_token(INT_LITERAL, get_loc(l), digits);
+    }
+
+    for (int n = 0; n < PUNCTS_LEN; n++) {
+        StringView query = sv_init (PUNCTS[n].word, strlen (PUNCTS[n].word));
+        size_t query_len = query.len;
+        // slice the same number of bytes from the source
+        StringView slice = sv_init (start, query_len);
+        if (sv_eq (slice, query)) {
+            // if multi-char, advance cursor accordingly
+            l->cursor = start + query_len;
+            return make_token_x(PUNCTS[n].id, get_loc(l));
+        }
+    }
 }

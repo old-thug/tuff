@@ -23,3 +23,4 @@
 
 #define arr_get(arr, n) (arr)->items[n]
 #define arr_len(arr) (arr)->count
+#define arr_last(arr) arr_get ((arr), (arr)->count-1)

@@ -5,17 +5,21 @@
 #include "args.h"
 #include "array.h"
 #include "def.h"
+#include "diag/diag.h"
 #include "module.h"
+#include "parse/parser.h"
 
 void *
-tuff_alloc (CompileSession *sess, size_t size) {
+tuff_alloc (Allocator *allocator, size_t size) {
     struct Alloc alloc;
     alloc.size = size;
     alloc.ptr  = malloc (size);
-    arr_push (&sess->allocator.allocations, alloc);
+    memset (alloc.ptr, 0, size);
+    arr_push (&allocator->allocations, alloc);
     return alloc.ptr;
 }
 
+// Don't initialize diag_collector here – needs pointer to session.
 CompileSession
 open_session (int argc, char **argv) {
     CompileSession sess = {0};
@@ -34,6 +38,9 @@ load_module (CompileSession *sess, const char *file_path) {
     ModuleId id = arr_len (&sess->loaded_modules);
     Module mod = {0};
     if (!open_module (file_path, &mod, sess)) todo ();
+    arr_push (&sess->loaded_modules, mod);
+    Parser parser = open_parser (sess, id);
+    parser_parse (&parser);
     return id;
 }
 

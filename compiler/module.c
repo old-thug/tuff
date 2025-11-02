@@ -35,7 +35,7 @@ open_module (const char *source_path, Module *mod, CompileSession *sess) {
     rewind (file);
 
     mod->module_name = NULL;
-    mod->source = tuff_alloc (sess, size + 1);
+    mod->source = tuff_alloc (&sess->allocator, size + 1);
     fread ((char *)mod->source, 1, size, file);
     ((char *)mod->source)[size] = 0;
     generate_source_lines (mod);

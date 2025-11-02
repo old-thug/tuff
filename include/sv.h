@@ -1,5 +1,6 @@
 #pragma once
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <string.h>
 
@@ -22,4 +23,10 @@ sv_init (const char *data, int len) {
 sv_inline StringView
 sv_substr (StringView sv, int start, int len) {
     return sv_init (sv.data + start, len);
+}
+
+sv_inline bool
+sv_eq (StringView sv, StringView ot) {
+    if (sv.len != ot.len) return false;
+    return !strncmp (sv.data, ot.data, sv.len);
 }
