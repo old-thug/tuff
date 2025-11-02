@@ -124,7 +124,9 @@ Written entirely in **C**, targeting **LLVM IR** for code generation.
 ```bash
 git clone https://github.com/old-thug/tuff.git
 cd tuff
-make
+mkdir bin
+cmake -S . -B bin/
+cmake --build bin/
 ```
 
 By default, the build produces `tuffc`, the compiler driver.
