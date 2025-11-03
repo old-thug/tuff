@@ -43,7 +43,7 @@ typedef enum {
     NODE_Ident,
     NODE_Lambda,
     NODE_Type,
-
+    
     // Error recovery / placeholder
     NODE_Error
 } NodeKind;

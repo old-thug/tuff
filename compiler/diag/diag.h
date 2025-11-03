@@ -19,6 +19,7 @@ static const char *diag_spelling[] = {
 
 typedef struct Label {
     const char *message;
+    const char *tag;
     Location    locus;
 } Label;
 
@@ -28,6 +29,10 @@ typedef struct {
     DiagnosticCollector *collector;
     DiagSeverity severity;
     Label label;
+    const char *sev_str;
+    // 4 | func foo foo () void {
+    //   |          ^^^ <tag>
+    const char *tag;
     arr_of (Label) secondary_labels;
 } Diagnostic;
 
@@ -46,9 +51,12 @@ make_diag_collector (CompileSession *sess) {
 }
 
 Diagnostic*
-diagnostic_at (DiagnosticCollector *dc, DiagSeverity sev, Location locus, const char *fmt, ...);
+diagnostic_at (DiagnosticCollector *dc, DiagSeverity sev, Location locus, const char *tag, const char *fmt, ...);
 
 void
-diag_note (Diagnostic *diag, Location locus, const char *fmt, ...);
+diag_note (Diagnostic *diag, Location locus, const char *tag, const char *fmt, ...);
+
+void
+print_diagnostic (const Diagnostic *diag);
 
 #endif // _TUFF_DIAG_H_

@@ -6,6 +6,7 @@
 #include "array.h"
 #include "def.h"
 #include "diag/diag.h"
+#include "lex/token.h"
 #include "module.h"
 #include "parse/parser.h"
 
@@ -37,10 +38,28 @@ load_module (CompileSession *sess, const char *file_path) {
     }
     ModuleId id = arr_len (&sess->loaded_modules);
     Module mod = {0};
-    if (!open_module (file_path, &mod, sess)) todo ();
+    if (!open_module (file_path, &mod, sess)) todo ("failed to open module");
     arr_push (&sess->loaded_modules, mod);
     Parser parser = open_parser (sess, id);
+    
+#if 0
+    while (!is_at_end (&parser)) {
+	Token tok = next_token (&parser);
+	println ("TOKEN: %s", token_name (tok.id));
+    }
+#else
     parser_parse (&parser);
+
+    if (parser.diag_collector->diagnostics.count > 0) {
+	for (int n = 0; n < parser.diag_collector->diagnostics.count; n++) {
+	    if (n != 0) eprint ("\n");
+	    Diagnostic *diag = &arr_get (&parser.diag_collector->diagnostics, n);
+	    print_diagnostic (diag);
+	}
+	return -1;
+    }
+    
+#endif
     return id;
 }
 

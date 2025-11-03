@@ -14,6 +14,8 @@ typedef struct Node {
     union {
 	FunctionItem   function;
 	IdentifierExpr identifier;
+	BlockExpr      block;
+	ReturnExpr     ret;
     };
 } Node;
 

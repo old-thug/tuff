@@ -98,4 +98,7 @@ make_token_x (int id, Location locus) {
     return (Token) { id, locus };
 }
 
+const char *
+token_name (int id);
+
 #endif // __TUFF_TOKEN_H_

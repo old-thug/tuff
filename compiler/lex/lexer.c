@@ -10,7 +10,7 @@
 
 #define get_loc(l) \
     make_locus (l->prev_line, l->line,\
-		l->prev_col, l->col-1,\
+		l->prev_col, l->col,\
 		l->module_id)
 
 static struct {
@@ -166,8 +166,14 @@ lexer_get_token (Lexer *l) {
 	    l->line ++;
 	    l->col  = 1;
 	    continue;
+	} else if (cp == '\r' && *(l->cursor + 1) == '\n') {
+	    lexer_next_codepoint (l);
+	    lexer_next_codepoint (l);
+	    l->line ++;
+	    l->col  = 1;
+	    continue;
 	}
-
+	
 	break;
     }
 
@@ -186,6 +192,7 @@ lexer_get_token (Lexer *l) {
 	    if (len < 0) break;
 	    if (!is_alpha(next) && !is_digit(next)) break;
 	    l->cursor += len;
+	    l->col    += len;
 	}
 	StringView word = lexer_slice (l, start);
 
@@ -245,6 +252,7 @@ lexer_get_token (Lexer *l) {
         if (sv_eq (slice, query)) {
             // if multi-char, advance cursor accordingly
             l->cursor = start + query_len;
+	    l->col += query_len;
             return make_token_x(PUNCTS[n].id, get_loc(l));
         }
     }
