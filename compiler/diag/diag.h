@@ -20,6 +20,7 @@ static const char *diag_spelling[] = {
 typedef struct Label {
     const char *message;
     const char *tag;
+    bool carries_locus;
     Location    locus;
 } Label;
 
@@ -55,6 +56,9 @@ diagnostic_at (DiagnosticCollector *dc, DiagSeverity sev, Location locus, const 
 
 void
 diag_note (Diagnostic *diag, Location locus, const char *tag, const char *fmt, ...);
+
+void
+diag_simple_note (Diagnostic *diag, const char *fmt, ...);
 
 void
 print_diagnostic (const Diagnostic *diag);

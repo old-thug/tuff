@@ -31,3 +31,21 @@ make_return_expr (Allocator *alloctor, NodePtr value, Location locus) {
     node->ret.value = value;
     return node;
 }
+
+NodePtr
+make_declare_expr (Allocator *allocator, Location locus,
+		   Mutability mutability, NodePtr receiver,
+		   NodePtr expression, TypePtr type) {
+    NodePtr node = make_node (allocator, NODE_Declare, locus);
+    node->declare.expression = expression;
+    node->declare.mutability = mutability;
+    node->declare.receiver   = receiver;
+    node->declare.type       = type;
+    return node;
+}
+
+NodePtr
+make_error_node (Allocator *allocator, Location locus) {
+    NodePtr node = make_node (allocator, NODE_Error, locus);
+    return node;
+}

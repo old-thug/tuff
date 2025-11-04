@@ -81,11 +81,13 @@ parse_function_parameters (Parser *p, FunctionParameterList *params) {
 	    }
 	} else {
 	    if (seen_default_value && !reported) {
-		Diagnostic *diag = parse_error (p, DIAG_Error, param.name.locus, NULL,
-			     "this parameter requires a default value");
-		diag_note (diag, first_param_default_value_set.locus, "before this",
-			   "consider moving `%.*s` to before `%.*s`",
-			   LIT (param.name.value), LIT (first_param_default_value_set.value));
+		Diagnostic *diag = parse_error (p, DIAG_Error, param.name.locus, "move this before any defaulted parameters",
+						"cannot declare a non-default parameter (`%.*s`) after a parameter with a default value",
+						LIT (param.name.value));
+		diag_simple_note (diag, "parameters with default values must appear after all required parameters"); 
+		diag_note (diag, first_param_default_value_set.locus, "here",
+			   "parameter `%.*s` first introduced a default value",
+			   LIT (first_param_default_value_set.value));
 		reported = true;
 	    }
 	    

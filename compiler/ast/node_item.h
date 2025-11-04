@@ -6,7 +6,6 @@
 #include "ast/type.h"
 #include "array.h"
 
-
 typedef struct {
     IdentifierExpr name;
     TypePtr    type;

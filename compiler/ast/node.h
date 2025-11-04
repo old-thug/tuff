@@ -13,6 +13,7 @@ typedef struct Node {
     Location primary_locus;
     union {
 	FunctionItem   function;
+	DeclareExpr    declare;
 	IdentifierExpr identifier;
 	BlockExpr      block;
 	ReturnExpr     ret;

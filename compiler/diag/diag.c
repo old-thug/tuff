@@ -33,10 +33,30 @@ diagnostic_at (DiagnosticCollector *dc, DiagSeverity sev, Location locus, const 
 }
 
 void
+diag_simple_note (Diagnostic *diag, const char *fmt, ...) {
+   Label label;
+   label.carries_locus = false;;
+   va_list args;
+   va_start (args, fmt);
+   
+   size_t size = vsnprintf (NULL, 0, fmt, args);
+   va_end (args);
+   va_start (args, fmt);
+   
+   char *str = (char *)tuff_alloc (&diag->collector->sess->allocator, size + 1);
+   vsnprintf (str, size + 1, fmt, args);
+   va_end (args);
+   
+   label.message = str;
+   arr_push (&diag->secondary_labels, label);
+}
+
+void
 diag_note (Diagnostic *diag, Location locus, const char *tag, const char *fmt, ...) {
     Label label;
     label.locus = locus;
     label.tag  = tag;
+    label.carries_locus = true;
     
     va_list args;
     va_start (args, fmt);
@@ -86,7 +106,9 @@ print_diagnostic (const Diagnostic *diag) {
     for (size_t i = 0; i < arr_len(&diag->secondary_labels); i++) {
         Label *label = &arr_get(&diag->secondary_labels, i);
         eprintln("note: %s", label->message);
-        print_location(label->locus, mod);
-        print_source_line(label, mod, label->locus);
+	if (label->carries_locus) {
+	    print_location(label->locus, mod);
+	    print_source_line(label, mod, label->locus);
+	}
     }
 }

@@ -17,17 +17,19 @@
 
 #define todo(fmt, ...) do { \
 	fprintf (stderr, "%s:%d: unimplemented: " fmt "\n", __FILE__, __LINE__, ##__VA_ARGS__); \
+	fflush (stderr);						\
 	crash ();							\
     } while (0)
 
 #define assert(expr, fmt, ...) do {					\
 	if (!(expr)) {							\
 	    fprintf (stderr, "%s:%d: assertion failed: " fmt "\n", __FILE__, __LINE__, ##__VA_ARGS__); \
+	    fflush (stderr);						\
 	    crash ();							\
 	}								\
     } while (0)
 
-#define printn(fmt, ...) printf (fmt , ##__VA_ARGS__)
+#define printn(fmt, ...) do { printf (fmt , ##__VA_ARGS__); fflush(stdout); } while (0)
 #define eprintn(fmt, ...) fprintf (stderr, fmt "\n", ##__VA_ARGS__)
 #define print(fmt, ...) fprintf (stdout, fmt , ##__VA_ARGS__)
 #define println(fmt, ...) fprintf (stdout, fmt "\n", ##__VA_ARGS__)

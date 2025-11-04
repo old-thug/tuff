@@ -1,5 +1,6 @@
 #include "ast/node_expr.h"
 #include "ast/node_kind.h"
+#include "ast/type.h"
 #include "diag/diag.h"
 #include "lex/loc.h"
 #include "lex/token.h"
@@ -45,6 +46,8 @@ parse_block(Parser *parser);
 NodePtr
 parse_binop(Parser *parser, NodePtr left);
 NodePtr
+parse_assign(Parser *parser, NodePtr reciever);
+NodePtr
 parse_function_call(Parser *parser, NodePtr left);
 
 static const
@@ -59,6 +62,8 @@ ParseRule parse_rules[] = {
     [ASTERISK]   =	{NULL, parse_binop, PREC_Multiplicative},
     [DIV]        =	{NULL, parse_binop, PREC_Multiplicative},
     [IDENTIFIER] =	{parse_primary, NULL, PREC_Primary},
+    [ASSIGN]     =      {NULL, parse_assign, PREC_Primary},
+    [COLON]     =       {NULL, parse_assign, PREC_Primary},
 };
 
 NodePtr
@@ -67,9 +72,18 @@ parse_expr(Parser *p, int min_prec) {
     ParseRule rule = parse_rules[token.id];
 
     if (rule.prefix == NULL) {
-	parse_error (p, DIAG_Error, token.locus, NULL,
-		     "expected start of primary expression");
-	return NULL;
+	if (token.id == SEMICOLON) {
+	    Diagnostic *diag = parse_error(p, DIAG_Error, token.locus,
+					   "expected start of primary expression",
+					   "unexpected extra `;`");
+	    diag_simple_note(diag, "did you mean to remove one semicolon?");
+	} else {
+	    parse_error (p, DIAG_Error, token.locus,
+			 "expected start of primary expression",
+			 "unexpected token");
+	}
+	next_token (p);
+	return make_error_node (p->allocator, token.locus);
     }
 
     NodePtr left = rule.prefix (p);
@@ -126,7 +140,7 @@ parse_block (Parser *p) {
 	// Implicit return?
 	if (!match_token (p, SEMICOLON) && match_token (p, RBRACE)) {
 	    stmt = make_return_expr (p->allocator, stmt, stmt->primary_locus);
-	}
+	} else if (stmt && may_consume_semicolon (stmt)) next_token (p); 	/* consume semicolon */
 	append_node_to_block (block, stmt);
     }
     tok = peek_token (p);
@@ -140,3 +154,27 @@ parse_binop (Parser *p, NodePtr left) { todo (); }
 
 NodePtr
 parse_function_call(Parser *p, NodePtr left) { todo (); }
+
+NodePtr
+parse_assign (Parser *p, NodePtr receiver) {
+    Token tok = next_token (p);
+    if (tok.id == ASSIGN) {	/* receiver `:=` expression */
+	Mutability mutability = MUTABILITY_Mutable;
+	TypePtr type = make_pending_type (p->allocator, receiver->primary_locus);
+	NodePtr expression = parse_expr (p, 0);
+	return make_declare_expr (p->allocator, tok.locus, mutability, receiver, expression, type);
+    } else if (tok.id == COLON) { /* receiver `:` type `=` expression */
+	TypePtr type = parse_type (p);
+	Token op = peek_token (p);
+	if (op.id != COLON && op.id != EQUAL) {
+	    todo ("raise error");
+	}
+	next_token (p);
+	Mutability mutability = (op.id == EQUAL)? MUTABILITY_Mutable: MUTABILITY_Immutable;
+	NodePtr expression = parse_expr (p, 0);
+	return make_declare_expr (p->allocator, tok.locus, mutability, receiver, expression, type);
+    }
+    printn ("Here\n"); fflush (stdout);
+
+    todo ();
+}
