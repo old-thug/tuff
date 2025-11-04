@@ -2,6 +2,7 @@
 
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdlib.h>
 #include <string.h>
 
 #define LIT(sv) (int)sv.len, sv.data
@@ -29,4 +30,12 @@ sv_inline bool
 sv_eq (StringView sv, StringView ot) {
     if (sv.len != ot.len) return false;
     return !strncmp (sv.data, ot.data, sv.len);
+}
+
+sv_inline const char*
+sv_get (StringView sv) {
+    char *buf = malloc (sv.len + 1);
+    memcpy (buf, sv.data, sv.len);
+    buf[sv.len] = 0;
+    return buf;
 }

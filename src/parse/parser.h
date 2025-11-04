@@ -16,6 +16,11 @@
 							       ##__VA_ARGS__)
 
 
+typedef enum {
+    PARSE_Default,
+    PARSE_FunctionArgs,
+} ParseContext;
+
 typedef struct {
     Lexer lexer;
     CompileSession *sess;
@@ -23,6 +28,7 @@ typedef struct {
     DiagnosticCollector *diag_collector;
     Token prev_token;
     Token current_token;
+    ParseContext context;
 } Parser;
 
 inlined Parser
@@ -33,6 +39,7 @@ open_parser (CompileSession *sess, ModuleId id) {
     p.allocator = &sess->allocator;
     p.diag_collector = &sess->diag_collector;
     p.current_token = lexer_get_token (&p.lexer);
+    p.context = PARSE_Default;
     return p;
 }
 

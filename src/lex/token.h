@@ -9,6 +9,8 @@
     TUFF_TOKEN (USE, "use")						\
     TUFF_TOKEN (EXTERN, "extern")					\
     TUFF_TOKEN (VOID, "void")						\
+    TUFF_TOKEN (IF, "if")						\
+    TUFF_TOKEN (ELSE, "else")					\
     TUFF_TOKEN (I8, "i8")						\
     TUFF_TOKEN (I16, "i16")						\
     TUFF_TOKEN (I32, "i32")						\

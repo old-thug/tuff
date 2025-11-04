@@ -41,6 +41,7 @@ typedef enum {
     NODE_Group,
     NODE_Literal,
     NODE_Ident,
+    NODE_Int,
     NODE_Lambda,
     NODE_Type,
     

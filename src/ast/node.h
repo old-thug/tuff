@@ -12,11 +12,17 @@ typedef struct Node {
     NodeKind kind;
     Location primary_locus;
     union {
-	FunctionItem   function;
-	DeclareExpr    declare;
+	FunctionItem function;
+	DeclareExpr declare;
+	AssignExpr assign;
+	FunctionCallExpr func_call;
 	IdentifierExpr identifier;
-	BlockExpr      block;
-	ReturnExpr     ret;
+	IntegerExpr integer;
+	BlockExpr block;
+	GroupExpr group;
+	ReturnExpr ret;
+	IfExpr if_expr;
+	BinaryOpExpr binop;
     };
 } Node;
 

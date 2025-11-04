@@ -1,7 +1,8 @@
-func foo () i32 {
-     a : i32 = f;
-     b : i32 : f;;
+func foo (a: i32, b: i32) i32 {
+
 }
 
 func main () void {
+     a, b := 1, 1;
+     putchar (if a == b { 2 } else { 4 } + 48);
 }

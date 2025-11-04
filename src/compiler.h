@@ -6,6 +6,7 @@
 #include "args.h"
 #include "array.h"
 #include "diag/diag.h"
+#include "map.h"
 #include "module.h"
 
 #define tuff_inline static inline

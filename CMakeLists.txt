@@ -8,18 +8,18 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 if (MSVC)
     add_compile_options(/W4 /permissive-)
 else()
-    add_compile_options(-Wall -ggdb)
+    add_compile_options(-Wall -ggdb -Wno-unused-variable)
 endif()
 
 file(GLOB_RECURSE COMPILER_SOURCES
-    "${CMAKE_SOURCE_DIR}/compiler/*.c"
+    "${CMAKE_SOURCE_DIR}/src/*.c"
 )
 
 add_executable(tuffc ${COMPILER_SOURCES})
 
 target_include_directories(tuffc PRIVATE
     ${CMAKE_SOURCE_DIR}/include
-    ${CMAKE_SOURCE_DIR}/compiler
+    ${CMAKE_SOURCE_DIR}/src
 )
 
 set_target_properties(tuffc PROPERTIES

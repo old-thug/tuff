@@ -21,6 +21,8 @@ static struct {
     { "extern", EXTERN },
     { "use", USE },
     { "void", VOID },
+    { "if", IF },
+    { "else", ELSE },
     { "i8", I8 },
     { "i16", I16 },
     { "i32", I32 },
@@ -256,4 +258,6 @@ lexer_get_token (Lexer *l) {
             return make_token_x(PUNCTS[n].id, get_loc(l));
         }
     }
+
+    todo ("LEX_FAILED: `%s`", start);
 }
