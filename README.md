@@ -1,20 +1,21 @@
-# **Tuff**
+# 🧱 Tuff
 
-**Tuff** is a **systems programming language** that lives between **C** and **Rust**.
-It offers the **performance and semantics of C** with **modern ergonomics** inspired by Rust — concise syntax, expressive types, and control that never hides from you.
+**Tuff** is a **systems programming language** that lives between **C** and **Rust**.  
+It combines **C’s semantics and control** with **modern ergonomics** — concise syntax, expressive types, and zero runtime hand-holding.
 
-> **No runtime. No GC. No hand-holding. Just control.**
+> **No GC. No safety nets. Just control.**
 
 ---
 
 ## 🚀 Overview
 
-Tuff is built for developers who want:
+Tuff consists of **three core components**:
 
-* C’s **predictability** and **low-level access**
-* Rust-like **ergonomics**, **pattern matching**, and **option types**
-* **LLVM backend** for real, optimized machine code
-* A toolchain written in **C**, designed to be **self-hosting**
+| Project | Description |
+|----------|--------------|
+| **libtuff** | Core library: lexer, parser, AST, type system, and shared utilities. |
+| **tuffc** | The Tuff compiler. Builds LLVM IR and emits native binaries. |
+| **tuffy** | The interpreter (and REPL). Executes Tuff code directly. |
 
 ---
 
@@ -26,7 +27,7 @@ func add(a: i32, b: i32) i32 {
 }
 
 func div(a: i32, b: i32) ?i32 {
-    if b == 0 then nil else then a / b
+    if b == 0 then nil else a / b
 }
 
 func factorial(n: i32) i32 {
@@ -39,83 +40,40 @@ func factorial(n: i32) i32 {
     a
 }
 
-extern func printf(fmt: *char, ...) i32;
-extern func scanf(fmt: *char, ...) i32;
-
-func main() i32 {
-    use ffi; # for to_cstr(&str)
-    printf("Hello World".to_cstr());
-    n: i32 = 0;
-    scanf("%d".to_cstr(), &n);
-    printf("N = %d".to_cstr(), n);
-}
-```
-
-### Structs, Unions, and Pattern Matching
-
-```tuff
-type Foo = struct {
-    a: i32,
-    b: &str,
-};
-
-type Bar = union {
-    foo: Foo,
-    baz: int,
-};
-
-impl Foo {
-    init(a: i32, b: &str) {
-        self.a = a;
-        self.b = b;
-    }
-
-    func name(&self) &str { self.b }
-    func age(&self) i32 { self.a }
-}
-
 func main() void {
-    use io; # for println
-    bar: Bar = '{ .baz = 3 };
-
-    match bar {
-        baz |x| -> { println("x = %d", x); }
-        foo |f| -> { println("f = %v", f); }
-    }
+    use io; # hypothetical stdlib
+    println("Factorial of 5 = %d", factorial(5));
 }
-```
+````
 
 ---
 
 ## ⚙️ Design Principles
 
-* **C semantics** — explicit memory model, predictable execution
-* **LLVM backend** — portable, efficient machine code
-* **Optional safety** — nullables, matches, and type inference without runtime cost
-* **No hidden allocations** — what you write is what runs
-* **Direct C interop** — headers in, functions out
+* **Predictable semantics** — no hidden allocations, no implicit conversions
+* **LLVM backend** — real machine code, no VM tax
+* **Optional safety** — nullables, pattern matching, and type inference without cost
+* **First-class C interop** — headers in, functions out
+* **No borrow checker** — ownership via move semantics, simple and explicit
 
 ---
 
-## 🧠 Compiler Architecture
+## 🧠 Architecture
 
-Written entirely in **C**, targeting **LLVM IR** for code generation.
+Tuff is structured as a **multi-target toolchain**:
 
-### Completeds Components
+```
+libtuff/
+├── lexer/
+├── parser/
+├── ast/
+└── ir/
+tuffc/  → compiler binary (LLVM backend)
+tuffy/  → interpreter (bytecode / AST execution)
+```
 
-* **Lexer** – UTF-8 aware tokenizer [ ]
-* **Parser** – recursive-descent style, produces an AST [ ]
-* **Semantic analyzer** – name resolution, type checking [ ]
-* **LLVM codegen** – IR builder emitting modules and functions [ ]
-* **Runtime stubs** – minimal, opt-in FFI utilities [ ]
-
-### Planned Features
-
-* Self-hosting compiler
-* Lightweight module system
-* Optional borrow-checking layer
-* Inline assembly support
-* Standard library (IO, FFI, memory utilities)
+Both the compiler and interpreter depend on `libtuff` for core language logic,
+but each maintains its own symbol resolution and execution model.
 
 ---
 
@@ -124,25 +82,56 @@ Written entirely in **C**, targeting **LLVM IR** for code generation.
 ```bash
 git clone https://github.com/old-thug/tuff.git
 cd tuff
-mkdir bin
-cmake -S . -B bin/
-cmake --build bin/
+mkdir build && cd build
+cmake ..
+cmake --build .
 ```
 
-By default, the build produces `tuffc`, the compiler driver.
-LLVM (≥ 15.0) and a C99 compiler are required.
+By default this builds:
+
+* `tuffc` → the compiler
+* `tuffy` → the interpreter
+* `libtuff` → static library used by both
+
+> Requires LLVM 15+ and a C99-compatible compiler.
+
+---
+
+## 🧪 Example Usage
+
+Compile:
+
+```bash
+./tuffc examples/hello.tuff -o hello
+./hello
+```
+
+Interpret:
+
+```bash
+./tuffy examples/hello.tuff
+```
+
+---
+
+## 🧭 Roadmap
+
+* [ ] Self-hosting compiler
+* [ ] Standard library (I/O, FFI, memory)
+* [ ] Optional borrow-checking pass
+* [ ] Inline assembly
+* [ ] Module and package system
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are welcome — whether you’re fixing a parser edge case, designing syntax, or extending LLVM codegen.
+All contributions are welcome — code, design input, or docs.
 
 1. Fork the repo
-2. Create a feature branch (`git checkout -b feature/new-thing`)
-3. Commit your changes (`git commit -m "feat: add new thing"`)
-4. Push to your fork and open a PR
+2. Create a feature branch
+3. Commit and push your changes
+4. Open a pull request
 
+Check the [Issues](https://github.com/old-thug/tuff/issues) and [Discussions](https://github.com/old-thug/tuff/discussions) for active topics.
 ---
-
-
