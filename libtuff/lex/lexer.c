@@ -240,6 +240,7 @@ lexer_get_token (Lexer *l) {
 	    
 	    if (!valid) break;
 	    l->cursor += len;
+	    l->col += len;
 	}
 
 	StringView digits = lexer_slice(l, start);
@@ -252,8 +253,8 @@ lexer_get_token (Lexer *l) {
         // slice the same number of bytes from the source
         StringView slice = sv_init (start, query_len);
         if (sv_eq (slice, query)) {
-            // if multi-char, advance cursor accordingly
-            l->cursor = start + query_len;
+             // if multi-char, advance cursor accordingly
+            l->cursor += query_len;
 	    l->col += query_len;
             return make_token_x(PUNCTS[n].id, get_loc(l));
         }

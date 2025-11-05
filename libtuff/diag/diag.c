@@ -75,7 +75,7 @@ diag_note (Diagnostic *diag, Location locus, const char *tag, const char *fmt, .
 
 void
 print_location (Location loc, const Module *mod) {
-    eprintln(" -->: %s:%zu:%zu", mod->source_path, loc.first_line, loc.first_col);
+    eprintln(" --> %s:%zu:%zu:", mod->source_path, loc.first_line, loc.first_col);
 }
 
 void

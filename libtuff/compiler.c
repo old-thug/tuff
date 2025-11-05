@@ -2,7 +2,6 @@
 
 #include <string.h>
 
-#include "args.h"
 #include "array.h"
 #include "def.h"
 #include "diag/diag.h"
@@ -22,9 +21,8 @@ tuff_alloc (Allocator *allocator, size_t size) {
 
 // Don't initialize diag_collector here – needs pointer to session.
 CompileSession
-open_session (int argc, char **argv) {
+open_session () {
     CompileSession sess = {0};
-    sess.args = parse_args (argc, argv);
     return sess;
 }
 
@@ -49,16 +47,6 @@ load_module (CompileSession *sess, const char *file_path) {
     }
 #else
     parser_parse (&parser);
-
-    if (parser.diag_collector->diagnostics.count > 0) {
-	for (int n = 0; n < parser.diag_collector->diagnostics.count; n++) {
-	    if (n != 0) eprint ("\n");
-	    Diagnostic *diag = &arr_get (&parser.diag_collector->diagnostics, n);
-	    print_diagnostic (diag);
-	}
-	return -1;
-    }
-    
 #endif
     return id;
 }
