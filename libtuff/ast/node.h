@@ -4,13 +4,15 @@
 #include "ast/node_item.h"
 #include "ast/node_expr.h"
 #include "ast/node_kind.h"
-#include "compiler.h"
 #include "lex/loc.h"
 
-
+typedef struct Scope Scope;
+typedef struct Symbol Symbol;
 typedef struct Node {
     NodeKind kind;
     Location primary_locus;
+    Scope *scope;
+    Symbol *sym;
     union {
 	FunctionItem function;
 	DeclareExpr declare;

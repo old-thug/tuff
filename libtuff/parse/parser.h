@@ -29,6 +29,8 @@ typedef struct {
     Token prev_token;
     Token current_token;
     ParseContext context;
+    ModulePtr module;
+    int brace_depth, paren_depth, brack_depth;
 } Parser;
 
 inlined Parser
@@ -40,6 +42,7 @@ open_parser (CompileSession *sess, ModuleId id) {
     p.diag_collector = &sess->diag_collector;
     p.current_token = lexer_get_token (&p.lexer);
     p.context = PARSE_Default;
+    p.module = get_module (sess, id);
     return p;
 }
 

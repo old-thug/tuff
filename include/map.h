@@ -27,11 +27,10 @@ hashmap_hash(const char *key) {
 }
 
 static inline HashMap
-hashmap_make(size_t bucket_count, bool owns_keys) {
+hashmap_make() {
     HashMap map = {0};
-    map.bucket_count = bucket_count;
-    map.owns_keys = owns_keys;
-    map.buckets = calloc(bucket_count, sizeof(Bucket*));
+    map.bucket_count = 64;
+    map.buckets = calloc(map.bucket_count, sizeof(Bucket*));
     return map;
 }
 
@@ -50,7 +49,7 @@ hashmap_put(HashMap *map, const char *key, void *value) {
     }
 
     Bucket *entry = malloc(sizeof *entry);
-    entry->key = map->owns_keys ? strdup(key) : key;
+    entry->key = strdup(key);
     entry->value = value;
     entry->next = NULL;
 
@@ -78,8 +77,7 @@ hashmap_free(HashMap *map) {
         Bucket *b = map->buckets[n];
         while (b) {
             Bucket *next = b->next;
-            if (map->owns_keys)
-                free((void*)b->key);
+	    free((void*)b->key);
             free(b);
             b = next;
         }

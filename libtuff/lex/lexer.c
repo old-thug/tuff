@@ -21,6 +21,8 @@ static struct {
     { "extern", EXTERN },
     { "use", USE },
     { "void", VOID },
+    { "var", VAR },
+    { "const", CONST },
     { "if", IF },
     { "else", ELSE },
     { "i8", I8 },
@@ -34,9 +36,14 @@ static struct {
 };
 static int KEYWORD_LEN = sizeof (KEYWORDS)/sizeof (KEYWORDS[0]);
 
-NOTE (old-thug, "the order of this listing matters");
+NOTE (old-thug,
+      "the order of this listing matters",
+      "punctuations like `==` need to appear before `=` so it doesn't lex as `=` `=` but as `==`");
 static
-struct { const char *word; int id; } PUNCTS[] = {
+struct {
+    const char *word;
+    int id;
+} PUNCTS[] = {
     { "{", LBRACE },
     { "}", RBRACE },
     { "(", LPAREN },
@@ -64,7 +71,7 @@ struct { const char *word; int id; } PUNCTS[] = {
     { ".", DOT },
     { "/=", DIV_EQ },
     { "/", DIV },
-    { ":=", ASSIGN },
+    { ":=", COLEQ },
     { "::", CONST_ASSIGN },
     { ":", COLON },
     { ";", SEMICOLON },
@@ -123,6 +130,7 @@ is_digit (Codepoint cp) {
     return (cp >= '0' && cp <= '9');
 }
 
+// Get the next codepoint from the lexer.
 static Codepoint
 lexer_next_codepoint (Lexer *l) {
     if (*(l->cursor) == 0) return 0;
@@ -138,6 +146,7 @@ lexer_next_codepoint (Lexer *l) {
     return cp;
 }
 
+// Get the next codepoint with out advancing the lexer.
 static Codepoint
 lexer_peek_codepoint(Lexer *l) {
     if (*(l->cursor) == '\0') return 0; // EOF
@@ -173,6 +182,43 @@ lexer_get_token (Lexer *l) {
 	    lexer_next_codepoint (l);
 	    l->line ++;
 	    l->col  = 1;
+	    continue;
+	} else if (cp == '/' && *(l->cursor + 1) == '/') {
+	    // Single-line comment.
+	    // Skip until end of line or EOF.
+	    while (cp != '\n' && cp != '\r' && cp != 0) {
+		cp = lexer_next_codepoint (l);
+	    }
+	    // Consume the newline so the next token starts clean.
+	    Codepoint pcp = cp;
+	    if (cp != 0) 
+		if (cp == '\r') {
+		    cp = lexer_next_codepoint (l);
+		    if (cp == '\n')
+			cp = lexer_next_codepoint (l);
+		}
+	    continue;
+	} else if (cp == '/' && *(l->cursor + 1) == '*') {
+	    lexer_next_codepoint (l); // consume '*'
+	    cp = lexer_next_codepoint (l);
+	    int depth = 1;
+
+	    while (cp != 0 && depth > 0) {
+		if (cp == '/' && *(l->cursor + 1) == '*') {
+		    depth++;
+		    lexer_next_codepoint (l); // consume '*'
+		} else if (cp == '*' && *(l->cursor + 1) == '/') {
+		    depth--;
+		    lexer_next_codepoint (l); // consume '/'
+		}
+		cp = lexer_next_codepoint (l);
+	    }
+
+	    if (depth > 0) {
+		todo ("error: unterminated block comment");
+	    }
+
+	    cp = lexer_next_codepoint (l);
 	    continue;
 	}
 	
@@ -260,5 +306,5 @@ lexer_get_token (Lexer *l) {
         }
     }
 
-    todo ("LEX_FAILED: `%s`", start);
+    todo ("LEX_FAILED: `%c` `%s`", *start, start);
 }

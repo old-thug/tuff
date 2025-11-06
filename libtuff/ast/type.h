@@ -1,8 +1,10 @@
 #ifndef _TUFF_NODE_TYPE_H_
 #define _TUFF_NODE_TYPE_H_
 
-#include "compiler.h"
 #include "lex/loc.h"
+
+typedef struct Allocator Allocator;
+extern void *tuff_alloc (Allocator *, size_t);
 typedef struct Type Type;
 typedef Type* TypePtr;
 

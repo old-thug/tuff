@@ -5,6 +5,7 @@
 #include "lex/loc.h"
 #include "lex/token.h"
 
+// Lexer: transforms tuff source code into tokens.
 typedef struct {
     const char *source;
     const char *cursor;
@@ -17,6 +18,7 @@ typedef struct {
     };
 } Lexer;
 
+// Initialize a new lexer.
 inlined Lexer
 open_lexer (CompileSession *sess, ModuleId id) {
     Lexer l = {0};
@@ -28,6 +30,7 @@ open_lexer (CompileSession *sess, ModuleId id) {
     return l;
 }
 
+// Retrieve the next token from the lexer.
 Token
 lexer_get_token (Lexer *lexer);
 

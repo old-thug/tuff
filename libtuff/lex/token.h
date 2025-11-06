@@ -6,6 +6,8 @@
 #define TUFF_TOKEN_LIST							\
     TUFF_TOKEN (END_OF_FILE, "end of file")				\
     TUFF_TOKEN (FUNC, "func")						\
+    TUFF_TOKEN (VAR, "var")						\
+    TUFF_TOKEN (CONST, "const")						\
     TUFF_TOKEN (USE, "use")						\
     TUFF_TOKEN (EXTERN, "extern")					\
     TUFF_TOKEN (VOID, "void")						\
@@ -33,6 +35,7 @@
     TUFF_TOKEN (AMP, "&")						\
     TUFF_TOKEN (AMP_EQ, "&=")						\
     TUFF_TOKEN (LOGICAL_AND, "&&")					\
+    TUFF_TOKEN (LIGHT_ARROW, "->")					\
     TUFF_TOKEN (PLUS, "+")						\
     TUFF_TOKEN (MINUS, "-")						\
     TUFF_TOKEN (DIV, "/")						\
@@ -41,14 +44,13 @@
     TUFF_TOKEN (MINUS_EQ, "-=")						\
     TUFF_TOKEN (ASTERISK_EQ, "*=")					\
     TUFF_TOKEN (COMMA, ",")						\
-    TUFF_TOKEN (LIGHT_ARROW, "->")					\
     TUFF_TOKEN (DOT, ".")						\
     TUFF_TOKEN (DOT_DOT, "..")						\
     TUFF_TOKEN (DOT_DOT_EQ, "..=")					\
     TUFF_TOKEN (ELLIPSIS, "...")					\
     TUFF_TOKEN (DIV_EQ, "/=")						\
     TUFF_TOKEN (COLON, ":")						\
-    TUFF_TOKEN (ASSIGN, ":=")						\
+    TUFF_TOKEN (COLEQ, ":=")						\
     TUFF_TOKEN (SEMICOLON, ";")						\
     TUFF_TOKEN (LEFT_SHIFT, "<<")					\
     TUFF_TOKEN (LEFT_SHIFT_EQ, "<<=")					\

@@ -1,0 +1,44 @@
+
+trait Add<Item> {
+      func add(self: &mut Self, item: Item) void;
+}
+
+trait Clone {
+      func clone(self: &Self) Self;
+}
+
+type List<T> = struct {
+  buf: *mut T,
+  size: usize,
+  cap: usize,
+};
+
+extend<T> List<T> {
+	  init() {}
+	  drop() {}
+
+	  func push(self: &mut Self, item: T) void {}
+	  func len(self: &Self) usize {}
+	  func get(self: &Self) ?T {}
+	  func map<U>(self: &Self, f: fn(&T) U) List<U> {}
+
+	  impl Add<T> {
+	       func add(self: &mut Self, item: T) void {
+	       	    self.push(item);
+	       }
+	  }
+
+	  impl Clone {
+	       func clone(self: &Self) Self { }
+	  }
+}
+
+trait Foo {
+      func bar(self: &Self) void;
+}
+
+extend<T> List<T> {
+	  impl Foo {
+	       func bar(self: &Self) void {}
+	  }
+}

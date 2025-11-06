@@ -31,8 +31,8 @@ func div(a: i32, b: i32) ?i32 {
 }
 
 func factorial(n: i32) i32 {
-    a := n;
-    b := n - 1;
+    var a := n;
+    var b := n - 1;
     while b >= 2 {
         a *= b;
         b -= 1;
@@ -41,7 +41,7 @@ func factorial(n: i32) i32 {
 }
 
 func main() void {
-    use io; # hypothetical stdlib
+    use io; // hypothetical stdlib
     println("Factorial of 5 = %d", factorial(5));
 }
 ````
@@ -82,7 +82,7 @@ but each maintains its own symbol resolution and execution model.
 ```bash
 git clone https://github.com/old-thug/tuff.git
 cd tuff
-mkdir build && cd build
+mkdir bin && cd bin
 cmake ..
 cmake --build .
 ```

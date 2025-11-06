@@ -51,7 +51,7 @@ load_module (CompileSession *sess, const char *file_path) {
     return id;
 }
 
-Module *
+ModulePtr
 get_module (CompileSession *sess, ModuleId id) {
     return &arr_get (&sess->loaded_modules, id);
 }

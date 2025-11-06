@@ -40,5 +40,6 @@ open_module (const char *source_path, Module *mod, CompileSession *sess) {
     fread ((char *)mod->source, 1, size, file);
     ((char *)mod->source)[size] = 0;
     generate_source_lines (mod);
+    mod->ast.count = mod->ast.capacity = 0;
     return true;
 }

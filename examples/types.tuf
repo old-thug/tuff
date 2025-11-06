@@ -4,12 +4,12 @@ type Foo = struct {
      b: &str,
 };
 
-type Bar = union {
+type Bar = union(enum) {
      foo: Foo,
      baz: int,
 };
 
-impl Foo {
+extend Foo {
      init(a: i32, b: &str) {
      	  self.a = a;
 	  self.b = b;
@@ -23,7 +23,7 @@ impl Foo {
 }
 
 func main () void {
-     use io; # for println
+     use io;
      bar :Bar = .{ .baz = 3 };
      match bar {
      	   baz |x| -> {

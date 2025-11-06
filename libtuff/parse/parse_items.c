@@ -27,9 +27,13 @@ parser_parse (Parser *p) {
 bool
 parse_items (Parser *p) {
     while (!is_at_end (p)) {
+	NodePtr item = NULL;
 	switch (peek_token (p).id) {
-	case FUNC: parse_function (p); break;
+	case FUNC: item = parse_function (p); break;
 	default: return false;
+	}
+	if (item) {
+	    arr_push (&p->module->ast, item);
 	}
     } 
     return false;
@@ -124,8 +128,6 @@ parse_function (Parser *p) {
     func->return_type = parse_type (p);
     if (match_token (p, LBRACE)) {
 	func->expression = parse_block (p);
-    } else {
-	func->expression = parse_expr (p, 0);
-    }
+    } else todo ();
     return node;
 }

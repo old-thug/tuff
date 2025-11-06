@@ -14,6 +14,15 @@ Token
 next_token (Parser *p) {
     p->prev_token = p->current_token;
     p->current_token = lexer_get_token (&p->lexer);
+    switch (p->current_token.id) {
+    case LBRACE: p->brace_depth++; break;
+    case RBRACE: if (p->brace_depth > 0) p->brace_depth--; break;
+    case LPAREN: p->paren_depth++; break;
+    case RPAREN: if (p->paren_depth > 0) p->paren_depth--; break;
+    case LBRACK: p->brack_depth++; break;
+    case RBRACK: if (p->brack_depth > 0) p->brack_depth--; break;
+    default: break;
+    }
     return p->prev_token;
 }
 
@@ -25,7 +34,7 @@ prev_token (Parser *p) {
 bool
 expect_token (Parser *p, int id) {
     if (!match_token (p, id)) {
-	parse_error (p, DIAG_Error, p->current_token.locus,
+	parse_error (p, DIAG_Error, p->current_token.locus, NULL,
 		     "expected `%s` but got `%s` instead",
 		     token_name (id),
 		     token_name (p->current_token.id));
@@ -117,11 +126,16 @@ TypePtr
 parse_type (Parser *p) {
     Token tok = next_token (p);
     if (!can_begin_type (tok.id)) {
-	parse_error (p, DIAG_Error, tok.locus, "expected a type here",
+	Diagnostic *diag = parse_error (p, DIAG_Error, tok.locus, "expected a type here",
 		     "expected one of `identifier`, `[`, `*`, `&`. got `%s`",
 		     token_name (tok.id));
-	skip_to_next_expr (p);
-	return NULL;
+	if (tok.id == LIGHT_ARROW || tok.id == COLON) {
+	    diag_simple_note (diag, "if you meant a function type, consider removing `%s`", token_name (tok.id));
+	    tok = next_token (p); // skip the `->` to the actual type
+	} else {
+	    skip_to_next_expr (p);
+	    return NULL;
+	}
     }
 
     switch (tok.id) {

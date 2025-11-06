@@ -60,6 +60,8 @@ parse_binop(Parser *p, NodePtr left);
 NodePtr
 parse_assign(Parser *p, NodePtr reciever);
 NodePtr
+parse_var_decl(Parser *p);
+NodePtr
 parse_function_call(Parser *p, NodePtr left);
 NodePtr
 parse_group (Parser *p, NodePtr first);
@@ -71,15 +73,15 @@ ParseRule parse_rules[] = {
     [IF]     =  {parse_if_expr, NULL, PREC_Primary, ASSOC_Left},
     [LBRACK]     =  {NULL, NULL, PREC_Postfix, ASSOC_Left},
     [COMMA]      =  {NULL, parse_group, PREC_Comma, ASSOC_Left},
-    [EQUAL]      =  {NULL, parse_binop, PREC_Assign, ASSOC_Right},
+    [EQUAL]      =  {NULL, parse_assign, PREC_Assign, ASSOC_Right},
     [PLUS]       =  {parse_unary, parse_binop, PREC_Additive, ASSOC_Left},
     [MINUS]      =  {parse_unary, parse_binop, PREC_Additive, ASSOC_Left},
     [ASTERISK]   =  {NULL, parse_binop, PREC_Multiplicative, ASSOC_Left},
     [DIV]        =  {NULL, parse_binop, PREC_Multiplicative, ASSOC_Left},
     [IDENTIFIER] =  {parse_primary, NULL, PREC_Primary, ASSOC_Left},
     [INT_LITERAL] =  {parse_primary, NULL, PREC_Primary, ASSOC_Left},
-    [ASSIGN]     =      {NULL, parse_assign, PREC_Assign, ASSOC_Right},
-    [COLON]      =      {NULL, parse_assign, PREC_Assign, ASSOC_Right},
+    [VAR]     =      {parse_var_decl, NULL, PREC_Assign, ASSOC_Right},
+    [CONST]      =   {parse_var_decl, NULL, PREC_Assign, ASSOC_Right},
 };
 
 NodePtr
@@ -99,6 +101,7 @@ parse_expr(Parser *p, int min_prec) {
 			 "unexpected token");
 	}
 	next_token (p);
+	skip_to (p, SEMICOLON);
 	return make_error_node (p->allocator, token.locus);
     }
 
@@ -246,25 +249,28 @@ parse_function_call(Parser *p, NodePtr left) {
 }
 
 NodePtr
-parse_assign (Parser *p, NodePtr receiver) {
-    Token tok = next_token (p);
-    if (tok.id == ASSIGN) { /* receiver `:=` expression */
-	Mutability mutability = MUTABILITY_Mutable;
-	TypePtr type = make_pending_type (p->allocator, receiver->primary_locus);
-	NodePtr expression = parse_expr (p, 0);
-	return make_declare_expr (p->allocator, tok.locus, mutability, receiver, expression, type);
-    } else if (tok.id == COLON) { /* receiver `:` type `=` expression */
-	TypePtr type = parse_type (p);
-	Token op = peek_token (p);
-	if (op.id != COLON && op.id != EQUAL) {
-	    todo ("raise error");
-	}
-	next_token (p);
-	Mutability mutability = (op.id == EQUAL)? MUTABILITY_Mutable: MUTABILITY_Immutable;
-	NodePtr expression = parse_expr (p, 0);
-	return make_declare_expr (p->allocator, tok.locus, mutability, receiver, expression, type);
+parse_assign (Parser *p, NodePtr receiver) { todo (); }
+
+NodePtr
+parse_var_decl (Parser *p) {
+    extern bool parse_identifier (Parser *p, IdentifierExpr *ident);
+    Mutability mutability = match_token (p, VAR)? MUTABILITY_Mutable: MUTABILITY_Immutable;
+    Token var_const = next_token (p);
+    IdentifierExpr ident = {0};
+    parse_identifier (p, &ident);
+    TypePtr type = make_pending_type (p->allocator, ident.locus);
+    NodePtr expr = NULL;
+    if (match_token (p, COLEQ)) {
+	Token coleq = next_token (p);
+	expr = parse_expr (p, 0);
+    } else if (match_token (p, COLON)) {
+	Token colon = next_token (p);
+	type = parse_type (p);
+	expect_token (p, EQUAL);
+	expr = parse_expr (p, 0);
     }
-    todo ();
+
+    return make_declare_expr(p->allocator, var_const.locus, mutability, ident, expr, type);
 }
 
 NodePtr

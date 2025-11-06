@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include "ast/node.h"
 #include "array.h"
 #include "sv.h"
 
@@ -13,8 +14,10 @@ typedef struct Module {
     const char *source;
     const char *source_path;
     arr_of(StringView) source_lines;
+    NodeList ast;
 } Module;
 
+typedef Module* ModulePtr;
 typedef struct CompileSession CompileSession;
 bool open_module (const char *source_path, Module *mod, CompileSession *sess);
 

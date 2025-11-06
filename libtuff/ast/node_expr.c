@@ -34,12 +34,12 @@ make_return_expr (Allocator *alloctor, NodePtr value, Location locus) {
 
 NodePtr
 make_declare_expr (Allocator *allocator, Location locus,
-		   Mutability mutability, NodePtr receiver,
+		   Mutability mutability, IdentifierExpr ident,
 		   NodePtr expression, TypePtr type) {
     NodePtr node = make_node (allocator, NODE_Declare, locus);
     node->declare.expression = expression;
     node->declare.mutability = mutability;
-    node->declare.receiver   = receiver;
+    node->declare.ident   = ident;
     node->declare.type       = type;
     return node;
 }

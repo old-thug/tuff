@@ -1,0 +1,47 @@
+// examples/bubble_sort.tuff
+
+trait Ord {
+    func lt(self: &Self, other: &Self) bool;
+}
+
+extend i32 {
+    impl Ord {
+	func lt(self: &Self, other: &Self) bool {
+            return *self < *other;
+	}
+    }
+}
+
+func bubble_sort<T: Ord>(arr: &mut [T]) void {
+    const n := arr.len();
+    for i in 0..n {
+        for j in 0..(n - i - 1) {
+            if arr[j + 1].lt(&arr[j]) {
+                const tmp := arr[j];
+                arr[j] = arr[j + 1];
+                arr[j + 1] = tmp;
+            }
+        }
+    }
+}
+
+func print_list(xs: &[i32]) void {
+    use io;
+    for &x in xs {
+        io::print("{} ", x);
+    }
+    io::println("");
+}
+
+pub func main() void {
+    use io;
+
+    var nums := [5, 3, 8, 4, 2];
+    io::println("Before sort:");
+    print_list(&nums);
+
+    bubble_sort(&mut nums);
+
+    io::println("After sort:");
+    print_list(&nums);
+}

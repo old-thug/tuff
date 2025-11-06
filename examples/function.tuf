@@ -4,12 +4,12 @@ func add (a:i32, b:i32) i32 {
 }
 
 func div (a:i32, b:i32) ?i32 {
-     if b == 0 then nil else then a / b
+    if b == 0 { nil } else { a / b }
 }
 
 func factorial (n:i32) i32 {
-     a := n;
-     b := n - 1;
+     var a := n;
+     var b := n - 1;
      while b >= 2 {
 	   a *= b;
      	   b -= 1;
@@ -21,9 +21,9 @@ extern func printf (fmt: *char, ...) i32;
 extern func scanf (fmt: *char, ...) i32;
 
 func main () i32 {
-     use ffi; # for to_cstr(&str)
+     use ffi; // for to_cstr(&str)
      printf ("Hello World".to_cstr());
-     n : i32 = 0;
+     var n : i32 = 0;
      scanf ("%d".to_cstr(),&n);
      printf ("N = %d".to_cstr(),n);
 }

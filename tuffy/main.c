@@ -1,5 +1,6 @@
 
 #include "libtuff/compiler.h"
+#include "libtuff/sema/symbol_resolver.h"
 #include "def.h"
 #include "array.h"
 
@@ -14,8 +15,10 @@ main (int argc, char *argv[]) {
     CompileSession sess = open_session ();
     sess.diag_collector = make_diag_collector (&sess);
     ModuleId main_mod = load_module (&sess, input_file);
+    run_symbol_resolver (&sess, main_mod);
     if (arr_len (&sess.diag_collector.diagnostics)) {
 	for (int n = 0; n < arr_len (&sess.diag_collector.diagnostics); n++) {
+	    if (n != 0) eprintln ();
 	    Diagnostic *diag = &arr_get (&sess.diag_collector.diagnostics, n);
 	    print_diagnostic (diag);
 	}

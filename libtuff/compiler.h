@@ -15,7 +15,7 @@ struct Alloc {
     void  *ptr;
 };
 
-typedef struct {
+typedef struct Allocator {
     arr_of(struct Alloc) allocations;
 } Allocator;
 
@@ -34,7 +34,7 @@ open_session ();
 ModuleId
 load_module (CompileSession *sess, const char *file_path);
 
-Module *
+ModulePtr
 get_module (CompileSession *sess, ModuleId id);
 
 #endif // __TUFF_COMPILER_H_

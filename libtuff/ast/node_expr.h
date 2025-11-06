@@ -4,11 +4,11 @@
 #include "array.h"
 #include "ast/node_kind.h"
 #include "ast/type.h"
-#include "compiler.h"
 #include "lex/loc.h"
 #include "sv.h"
-#include <stdint.h>
 
+#include <stdint.h>
+extern void *tuff_alloc (Allocator *, size_t);
 typedef arr_of (NodePtr) NodeList;
 typedef NodeList ArgumentList;
 
@@ -30,7 +30,7 @@ typedef struct {
 
 typedef struct {
     Mutability mutability;
-    NodePtr receiver;
+    IdentifierExpr ident;
     NodePtr expression;
     TypePtr type;
 } DeclareExpr;
@@ -76,7 +76,7 @@ NodePtr
 make_block_expr (Allocator *allocator, Location begin_locus);
 NodePtr
 make_declare_expr (Allocator *allocator, Location locus,
-		   Mutability mutability, NodePtr receiver,
+		   Mutability mutability, IdentifierExpr ident,
 		   NodePtr expression, TypePtr type);
 NodePtr
 make_assign_expr (Allocator *allocator, Location locus,
